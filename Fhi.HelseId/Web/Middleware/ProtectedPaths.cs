@@ -68,7 +68,7 @@ namespace Fhi.HelseId.Web.Middleware
         /// <summary>
         /// Paths that don't require authentication
         /// </summary>
-        public List<PathString>? Exclusions { get; set; }
+        public List<PathString>? Exclusions { get; protected set; }
 
         /// <summary>
         /// Path redirected to if user is not authorized to access paths
@@ -76,11 +76,5 @@ namespace Fhi.HelseId.Web.Middleware
         public string AccessDeniedPath { get; }
     }
 
-    public static class ProtectPathsExtensions
-    {
-        public static IApplicationBuilder UseProtectPaths(this IApplicationBuilder builder, ProtectPathsOptions options)
-        {
-            return builder.UseMiddleware<ProtectPaths>(options);
-        }
-    }
+    
 }

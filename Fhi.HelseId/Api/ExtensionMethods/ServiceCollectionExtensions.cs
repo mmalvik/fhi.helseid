@@ -19,21 +19,20 @@ namespace Fhi.HelseId.Api.ExtensionMethods
             services.AddHttpContextAccessor();
             services.AddSingleton<IAutentiseringkonfigurasjon>(config);
 
-            if (config.AuthUse)
-            {
-                services.AddOptions<HelseIdOptions>()
-                    .Bind(configAuthSection)
-                    .ValidateDataAnnotations();
+            if (!config.AuthUse) 
+                return;
+            services.AddOptions<HelseIdOptions>()
+                .Bind(configAuthSection)
+                .ValidateDataAnnotations();
 
 
-                services.AddScoped<ICurrentUser, CurrentHttpUser>();
-                services.AddScoped<IAccessTokenProvider, HttpContextAccessTokenProvider>();
+            services.AddScoped<ICurrentUser, CurrentHttpUser>();
+            services.AddScoped<IAccessTokenProvider, HttpContextAccessTokenProvider>();
 
-                services
-                    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddHelseIdJwtBearer(config);
-                services.AddHelseIdAuthorization(config);
-            }
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddHelseIdJwtBearer(config);
+            services.AddHelseIdAuthorization(config);
         }
 
         public static bool SetupHelseIdAuthorizationControllers(this IServiceCollection services,

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Fhi.HelseId.Common.Identity;
 using Fhi.HelseId.Web.Hpr;
@@ -88,20 +87,9 @@ namespace Fhi.HelseId.Web.ExtensionMethods
         {
             if (!config.AuthUse)
                 return;
-            var excluded = new List<PathString>
-            {
-                "/favicon.ico",
-                redirect.Forbidden,
-                redirect.LoggedOut,
-                redirect.Statuscode
-            };
-            if (excludeList != null && excludeList.Any())
-                excluded.AddRange(excludeList);
-
-            app.UseProtectPaths(new ProtectPathsOptions(DeterminePresidingPolicy(config, hprFlags), redirect.Forbidden)
-            {
-                Exclusions = excluded
-            });
+            var policy = new Policies().DeterminePresidingPolicy(config, hprFlags);
+            var options = new HelseIdWebProtectedPathsOptions(policy, redirect, excludeList);
+            app.UseMiddleware<ProtectPaths>((ProtectPathsOptions) options);
         }
 
 
@@ -154,21 +142,6 @@ namespace Fhi.HelseId.Web.ExtensionMethods
         }
 
 
-        /// <summary>
-        /// Determine the presiding policy from configuration.
-        /// Will return Policies.HidAuthenticated if no other policies are configured.
-        /// </summary>
-        /// <param name="helseIdWebKonfigurasjon"></param>
-        /// <param name="hprFeatureFlags"></param>
-        /// <returns></returns>
-        private static string DeterminePresidingPolicy(IHelseIdWebKonfigurasjon helseIdWebKonfigurasjon, IHprFeatureFlags hprFeatureFlags)
-            => new []
-            {
-                new { PolicyActive = helseIdWebKonfigurasjon.UseHprNumber && hprFeatureFlags.UseHprPolicy, Policy = Policies.GodkjentHprKategoriPolicy},
-                new { PolicyActive = helseIdWebKonfigurasjon.UseHprNumber, Policy = Policies.HprNummer },
-                new { PolicyActive = true, Policy = Policies.HidAuthenticated }
-            }
-            .ToList()
-            .First(p => p.PolicyActive).Policy;
+       
     }
 }
